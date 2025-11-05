@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Live Stock Ticker</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+    color: lime;
+    font-family: Arial, sans-serif;
+    font-size: 48px; /* adjust based on LED screen height */
+  }
+  #ticker {
+    white-space: nowrap;
+    position: absolute;
+    will-change: transform;
+    animation: scroll 30s linear infinite;
+  }
+  @keyframes scroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+</style>
+</head>
+<body>
+<div id="ticker">Loading stock data...</div>
+
+<script>
+const SYMBOLS = ["AAPL","GOOGL","TSLA","MSFT","AMZN"];
+const API_KEY = "d454k1hr01qsugt8kuc0d454k1hr01qsugt8kucg"; // Get free API key from finnhub.io
+
+async function fetchStockData() {
+    try {
+        const stockData = await Promise.all(SYMBOLS.map(async symbol => {
+            const res = await fetch(`https://finnhub.io/api/v1/quote?symbol=${symbol}&token=${API_KEY}`);
+            const data = await res.json();
+            const change = (data.c - data.pc).toFixed(2);
+            return `${symbol}: $${data.c.toFixed(2)} (${change >= 0 ? '+' : ''}${change})`;
+        }));
+        document.getElementById("ticker").innerHTML = stockData.join(" | ");
+    } catch (err) {
+        console.error(err);
+        document.getElementById("ticker").innerHTML = "Error loading stock data";
+    }
+}
+
+// Update every 5 seconds
+fetchStockData();
+setInterval(fetchStockData, 5000);
+</script>
+</body>
+</html>
